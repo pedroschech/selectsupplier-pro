@@ -12,7 +12,7 @@
   --green:#16a34a;--yellow:#facc15;--red:#dc2626;--radius:16px;
 }
 *{box-sizing:border-box;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Inter,sans-serif}
-body{margin:0;background:radial-gradient(1000px 600px at -10% -10%,#0d1f3a 0%,#0b1424 60%);}
+body{margin:0;background:radial-gradient(1000px 600px at -10% -10%,#0d1f3a 0%,#0b1424 60%);color:var(--text)}
 header{
   background:linear-gradient(135deg,var(--navy),var(--blue));
   color:#fff;display:flex;gap:12px;align-items:center;padding:18px 20px;
@@ -20,7 +20,7 @@ header{
 }
 header img{height:44px}
 header h1{margin:0;font-size:1.6rem}
-header p{margin:0;color:#d7e2ff}
+header p{margin:0;color:#e9efff}
 main{max-width:1280px;margin:0 auto;padding:18px}
 .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
   padding:16px 18px;box-shadow:0 8px 24px rgba(0,0,0,.28);margin-bottom:16px}
@@ -31,9 +31,8 @@ main{max-width:1280px;margin:0 auto;padding:18px}
 input,select,textarea{width:100%;padding:8px 10px;border-radius:10px;border:1px solid var(--border);background:#0e223d;color:var(--text)}
 input[type="number"]{max-width:120px}
 table{width:100%;border-collapse:collapse;margin-top:8px;font-size:.92rem}
-th,td{border:1px solid var(--border);padding:6px 8px;vertical-align:top}
+th,td{border:1px solid var(--border);padding:6px 8px;vertical-align:top;color:var(--text)}
 th{background:#16395e;text-align:left}
-td{color:var(--muted)}
 .tabs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
 .tab-btn{background:#0e223d;border:1px solid var(--border);color:var(--text);padding:7px 14px;border-radius:999px;cursor:pointer}
 .tab-btn.active{background:var(--accent);border-color:var(--accent);color:#fff}
@@ -47,11 +46,11 @@ td{color:var(--muted)}
 @media (max-width:980px){.col-6,.col-4,.col-3{grid-column:span 12}}
 footer{text-align:center;color:var(--muted);font-size:.85rem;margin:20px 0}
 
-/* LOGIN */
+/* LOGIN (dark) */
 #loginOverlay{position:fixed;inset:0;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;z-index:50}
-#loginCard{background:#fff;color:#111;border-radius:14px;max-width:380px;width:100%;padding:18px 20px;box-shadow:0 18px 40px rgba(0,0,0,.45)}
+#loginCard{background:var(--card2);color:var(--text);border-radius:14px;max-width:380px;width:100%;padding:18px 20px;border:1px solid var(--border);box-shadow:0 18px 40px rgba(0,0,0,.45)}
 #loginCard h2{margin:4px 0 6px}
-#loginCard input{background:#fff;color:#111;border:1px solid #cfd6e4}
+#loginCard input{background:#0e223d;color:var(--text);border:1px solid var(--border)}
 #loginCard .btn{width:100%}
 
 /* small helpers */
@@ -82,7 +81,7 @@ footer{text-align:center;color:var(--muted);font-size:.85rem;margin:20px 0}
     <label>Usuário</label><input id="loginUser" placeholder="adm">
     <label>Senha</label><input id="loginPass" type="password" placeholder="123">
     <button class="btn" style="margin-top:10px" onclick="doLogin()">Entrar</button>
-    <div id="loginErr" style="display:none;color:#c10;font-weight:600;margin-top:8px">Credenciais incorretas.</div>
+    <div id="loginErr" style="display:none;color:#ffd0d0;font-weight:600;margin-top:8px">Credenciais incorretas.</div>
   </div>
 </div>
 
@@ -93,6 +92,7 @@ footer{text-align:center;color:var(--muted);font-size:.85rem;margin:20px 0}
       <button class="tab-btn" data-tab="fornecedores" onclick="switchTab(event,'fornecedores')">Fornecedores</button>
       <button class="tab-btn" data-tab="cadastro" onclick="switchTab(event,'cadastro')">Manutenção/Cadastro de Fornecedores</button>
       <button class="tab-btn" data-tab="projetos" onclick="switchTab(event,'projetos')">Projetos</button>
+      <button class="tab-btn" data-tab="sobre" onclick="switchTab(event,'sobre')">Sobre</button>
     </div>
 
     <!-- PROJETO -->
@@ -144,7 +144,18 @@ footer{text-align:center;color:var(--muted);font-size:.85rem;margin:20px 0}
     <!-- FORNECEDORES -->
     <section id="fornecedores" class="section">
       <h2>Base de Fornecedores</h2>
-      <div id="fornList"></div>
+      <div class="row">
+        <div class="col-6">
+          <label>Notas por área (opcional)</label>
+          <select id="filtroAreaNotas" onchange="renderFornecedores()">
+            <option value="">(selecionar área para exibir notas da área)</option>
+          </select>
+        </div>
+        <div class="col-6" style="display:flex;align-items:flex-end;gap:8px">
+          <button class="btn ghost" onclick="renderFornecedores(true)">Limpar filtro</button>
+        </div>
+        <div class="col-12" id="fornList"></div>
+      </div>
     </section>
 
     <!-- CADASTRO -->
@@ -182,29 +193,44 @@ footer{text-align:center;color:var(--muted);font-size:.85rem;margin:20px 0}
       <h2>Projetos Executados</h2>
       <div id="projHist"></div>
     </section>
+
+    <!-- SOBRE -->
+    <section id="sobre" class="section">
+      <h2>Sobre</h2>
+      <p class="small muted">Protótipo acadêmico de apoio à decisão multicritério (MCDA) para seleção de fornecedores. Considera múltiplas áreas de processo, índices com pesos normalizados e notas por área vs. globais, gerando ranking por projeto.</p>
+      <h3>Método de cálculo</h3>
+      <ol class="small muted">
+        <li>Selecione 1+ áreas e atribua pesos (%). Pesos normalizados somam 1.</li>
+        <li>Marque os índices e atribua pesos (%). Pesos normalizados somam 1.</li>
+        <li>Score da área = Σ(nota índice × peso índice). Índices “globais” usam nota global do fornecedor; índices “área” usam nota daquela área.</li>
+        <li>Score final do fornecedor = Σ(score da área × peso da área).</li>
+        <li>Somente fornecedores que atendem <b>todas</b> as áreas do projeto são considerados.</li>
+      </ol>
+      <p class="small muted">Para uso corporativo real: autenticação corporativa (SSO/AD), banco interno, versionamento das avaliações, integrações (ERP/Qualidade) e governança de dados.</p>
+    </section>
   </div>
 </main>
 
 <footer>SelectSupplier — Protótipo acadêmico (AGEPE II · PUCRS)</footer>
 
 <script>
-/* ===================== ÍNDICES (15) ===================== */
+/* ===================== ÍNDICES (15) — textos conforme solicitado ===================== */
 const INDICES = [
-  { id:"I1",  nome:"Qualidade",                    scope:"area",   desc:"Conformidade com desenho/tolerâncias" },
-  { id:"I2",  nome:"Tempo de Entrega",             scope:"area",   desc:"Pontualidade; lead time real" },
-  { id:"I3",  nome:"Custo",                        scope:"area",   desc:"Preço e estabilidade" },
-  { id:"I4",  nome:"Flexibilidade de Capacidade",  scope:"area",   desc:"Reação a mudanças de volume/mix" },
-  { id:"I5",  nome:"Acuracidade de Documentos",    scope:"global", desc:"Erros em NF/CT-e; divergências" },
-  { id:"I6",  nome:"Reclamações Técnicas",         scope:"area",   desc:"(nota alta = poucas ocorrências)" },
-  { id:"I7",  nome:"Aderência Ambiental",          scope:"global", desc:"ESG/Certificações/Descarte" },
-  { id:"I8",  nome:"Comunicação",                  scope:"global", desc:"Agilidade/clareza de retorno" },
-  { id:"I9",  nome:"Inovação Tecnológica",         scope:"area",   desc:"Propostas de melhoria" },
-  { id:"I10", nome:"Confiabilidade Financeira",    scope:"global", desc:"Risco de crédito/continuidade" },
-  { id:"I11", nome:"Desempenho Logístico",         scope:"area",   desc:"Agendamento/Rastreabilidade" },
-  { id:"I12", nome:"Compliance Legal",             scope:"global", desc:"Regularidade fiscal/trabalhista" },
-  { id:"I13", nome:"Suporte Pós-venda",            scope:"global", desc:"Rapidez na resolução de problemas" },
-  { id:"I14", nome:"Satisfação Cliente Interno",   scope:"area",   desc:"Percepção Engenharia/Produção" },
-  { id:"I15", nome:"Capacidade Técnica",           scope:"area",   desc:"Domínio do processo e normas" }
+  { id:"I1",  nome:"Qualidade",                    scope:"area",   desc:"Conformidade com especificações, taxa de não conformidade, retrabalho." },
+  { id:"I2",  nome:"Tempo de Entrega",             scope:"area",   desc:"Cumprimento de prazos, pontualidade, lead time médio." },
+  { id:"I3",  nome:"Custo",                        scope:"area",   desc:"Nível de preço em relação ao mercado, estabilidade de preço, competitividade." },
+  { id:"I4",  nome:"Flexibilidade de Capacidade",  scope:"area",   desc:"Capacidade de reagir a mudanças de volume/mix, urgências." },
+  { id:"I5",  nome:"Acuracidade de Documentos Fiscais", scope:"global", desc:"Erros em notas fiscais, divergências pedido x faturamento." },
+  { id:"I6",  nome:"Reclamações Técnicas (Histórico)",  scope:"area",   desc:"Histórico de problemas técnicos (nota alta = poucas reclamações)." },
+  { id:"I7",  nome:"Adesão a Normas Ambientais",   scope:"global", desc:"Certificações, descarte adequado, requisitos ESG." },
+  { id:"I8",  nome:"Facilidade de Comunicação",    scope:"global", desc:"Agilidade de resposta, clareza, acesso a responsáveis." },
+  { id:"I9",  nome:"Inovação Tecnológica",         scope:"area",   desc:"Proposição de melhorias, novos processos, sugestões técnicas." },
+  { id:"I10", nome:"Confiabilidade Financeira",    scope:"global", desc:"Estabilidade financeira percebida, risco de ruptura por crédito." },
+  { id:"I11", nome:"Capacidade Técnica",           scope:"area",   desc:"Adequação tecnológica para peças complexas, domínio de processos e normas técnicas." },
+  { id:"I12", nome:"Desempenho Logístico",         scope:"area",   desc:"Organização de expedição, rastreabilidade, cumprimento de janelas de coleta/entrega." },
+  { id:"I13", nome:"Conformidade Legal & Compliance", scope:"global", desc:"Documentação legal, requisitos trabalhistas e fiscais em dia, política anticorrupção." },
+  { id:"I14", nome:"Suporte & Atendimento Pós-venda", scope:"global", desc:"Rapidez na resolução de problemas, suporte técnico após a entrega." },
+  { id:"I15", nome:"Satisfação do Cliente Interno", scope:"area",   desc:"Percepção das áreas usuárias (engenharia, produção, manutenção) sobre o fornecedor." }
 ];
 
 /* ===================== ÁREAS ===================== */
@@ -226,149 +252,156 @@ const AREAS = [
   { id:"A15", nome:"Fabricação de Moldes" }
 ];
 
-/* ===================== BASE DE FORNECEDORES (≥19) ===================== */
-/* Modelo: {id,nome,areas:[Ax],notas:{ global:{I5:..,I7:..}, porArea:{ A1:{I1:..,I2:..,I3:..,I4:..,I6:..,I9:..,I11:..,I14:..,I15:..}, ... } } } */
-
+/* ===================== BASE DE FORNECEDORES (≥22) com vários A1+A2 ===================== */
+/* Modelo: {id,nome,areas:[Ax],notas:{ global:{...}, porArea:{ A1:{I1..}, ... } } } */
 const BASE_FORNECEDORES = [
   { id:"F1", nome:"MecanizaPro", areas:["A1","A2","A3"], notas:{
-      global:{ I5:8,I7:7,I8:8,I10:7,I12:7,I13:7 },
+      global:{ I5:8,I7:7,I8:8,I10:7,I13:7,I14:7 },
       porArea:{
-        A1:{ I1:8,I2:6,I3:7,I4:6,I6:7,I9:7,I11:7,I14:8,I15:8 },
-        A2:{ I1:6,I2:6,I3:7,I4:5,I6:6,I9:5,I11:6,I14:6,I15:6 },
-        A3:{ I1:5,I2:4,I3:5,I4:5,I6:5,I9:5,I11:5,I14:5,I15:5 }
+        A1:{ I1:8,I2:6,I3:7,I4:6,I6:8,I9:7,I11:8,I12:7,I15:8 },
+        A2:{ I1:6,I2:6,I3:7,I4:5,I6:7,I9:5,I11:6,I12:6,I15:6 },
+        A3:{ I1:5,I2:4,I3:5,I4:5,I6:6,I9:5,I11:5,I12:5,I15:5 }
       }
   }},
-  { id:"F2", nome:"Usinax", areas:["A1","A5","A10"], notas:{
-      global:{ I5:7,I7:8,I8:7,I10:6,I12:7,I13:7 },
+  { id:"F2", nome:"Usinax", areas:["A1","A2","A5","A10"], notas:{
+      global:{ I5:7,I7:8,I8:7,I10:6,I13:7,I14:7 },
       porArea:{
-        A1:{ I1:7,I2:8,I3:6,I4:7,I6:7,I9:6,I11:8,I14:7,I15:7 },
-        A5:{ I1:8,I2:7,I3:8,I4:6,I6:7,I9:8,I11:7,I14:8,I15:7 },
-        A10:{ I1:7,I2:8,I3:7,I4:6,I6:7,I9:6,I11:8,I14:7,I15:7 }
+        A1:{ I1:7,I2:8,I3:6,I4:7,I6:8,I9:6,I11:8,I12:8,I15:7 },
+        A2:{ I1:7,I2:7,I3:6,I4:6,I6:7,I9:5,I11:6,I12:6,I15:6 },
+        A5:{ I1:8,I2:7,I3:8,I4:6,I6:7,I9:8,I11:7,I12:7,I15:7 },
+        A10:{ I1:7,I2:8,I3:7,I4:6,I6:7,I9:6,I11:8,I12:8,I15:7 }
       }
   }},
   { id:"F3", nome:"SmartAutomate", areas:["A6"], notas:{
-      global:{ I5:9,I7:9,I8:9,I10:9,I12:9,I13:9 },
-      porArea:{ A6:{ I1:9,I2:8,I3:8,I4:7,I6:9,I9:9,I11:8,I14:9,I15:9 } }
+      global:{ I5:9,I7:9,I8:9,I10:9,I13:9,I14:9 },
+      porArea:{ A6:{ I1:9,I2:8,I3:8,I4:7,I6:9,I9:9,I11:8,I12:8,I15:9 } }
   }},
   { id:"F4", nome:"MetalPrime", areas:["A8","A7","A10"], notas:{
-      global:{ I5:7,I7:7,I8:7,I10:7,I12:7,I13:7 },
+      global:{ I5:7,I7:7,I8:7,I10:7,I13:7,I14:7 },
       porArea:{
-        A8:{ I1:6,I2:6,I3:6,I4:6,I6:6,I9:5,I11:6,I14:6,I15:6 },
-        A7:{ I1:7,I2:7,I3:7,I4:6,I6:7,I9:6,I11:7,I14:7,I15:7 },
-        A10:{ I1:8,I2:8,I3:7,I4:6,I6:7,I9:6,I11:8,I14:7,I15:7 }
+        A8:{ I1:6,I2:6,I3:6,I4:6,I6:7,I9:5,I11:6,I12:6,I15:6 },
+        A7:{ I1:7,I2:7,I3:7,I4:6,I6:7,I9:6,I11:7,I12:7,I15:7 },
+        A10:{ I1:8,I2:8,I3:7,I4:6,I6:7,I9:6,I11:8,I12:8,I15:7 }
       }
   }},
   { id:"F5", nome:"GreenPlast", areas:["A4","A11"], notas:{
-      global:{ I5:8,I7:9,I8:7,I10:8,I12:8,I13:8 },
+      global:{ I5:8,I7:9,I8:7,I10:8,I13:8,I14:8 },
       porArea:{
-        A4:{ I1:8,I2:7,I3:7,I4:7,I6:8,I9:7,I11:7,I14:8,I15:8 },
-        A11:{ I1:7,I2:7,I3:6,I4:6,I6:7,I9:6,I11:7,I14:8,I15:7 }
+        A4:{ I1:8,I2:7,I3:7,I4:7,I6:8,I9:7,I11:7,I12:7,I15:8 },
+        A11:{ I1:7,I2:7,I3:6,I4:6,I6:7,I9:6,I11:7,I12:7,I15:7 }
       }
   }},
   { id:"F6", nome:"LaserShape", areas:["A10","A1"], notas:{
-      global:{ I5:8,I7:8,I8:8,I10:7,I12:7,I13:7 },
+      global:{ I5:8,I7:8,I8:8,I10:7,I13:7,I14:7 },
       porArea:{
-        A10:{ I1:8,I2:8,I3:7,I4:7,I6:8,I9:7,I11:8,I14:8,I15:7 },
-        A1:{  I1:7,I2:7,I3:6,I4:6,I6:7,I9:6,I11:7,I14:7,I15:7 }
+        A10:{ I1:8,I2:8,I3:7,I4:7,I6:8,I9:7,I11:8,I12:8,I15:7 },
+        A1:{  I1:7,I2:7,I3:6,I4:6,I6:7,I9:6,I11:7,I12:7,I15:7 }
       }
   }},
   { id:"F7", nome:"MetriScan", areas:["A9"], notas:{
-      global:{ I5:9,I7:9,I8:8,I10:8,I12:9,I13:8 },
-      porArea:{ A9:{ I1:9,I2:8,I3:7,I4:6,I6:8,I9:8,I11:9,I14:8,I15:8 } }
+      global:{ I5:9,I7:9,I8:8,I10:8,I13:9,I14:8 },
+      porArea:{ A9:{ I1:9,I2:8,I3:7,I4:6,I6:8,I9:8,I11:9,I12:8,I15:8 } }
   }},
   { id:"F8", nome:"TecnoWeld", areas:["A2"], notas:{
-      global:{ I5:7,I7:7,I8:6,I10:7,I12:7,I13:7 },
-      porArea:{ A2:{ I1:8,I2:6,I3:6,I4:6,I6:7,I9:6,I11:6,I14:7,I15:7 } }
+      global:{ I5:7,I7:7,I8:6,I10:7,I13:7,I14:7 },
+      porArea:{ A2:{ I1:8,I2:6,I3:6,I4:6,I6:7,I9:6,I11:6,I12:6,I15:7 } }
   }},
   { id:"F9", nome:"AutoPaint", areas:["A11"], notas:{
-      global:{ I5:7,I7:8,I8:7,I10:8,I12:8,I13:8 },
-      porArea:{ A11:{ I1:8,I2:7,I3:6,I4:6,I6:7,I9:6,I11:7,I14:8,I15:7 } }
+      global:{ I5:7,I7:8,I8:7,I10:8,I13:8,I14:8 },
+      porArea:{ A11:{ I1:8,I2:7,I3:6,I4:6,I6:7,I9:6,I11:7,I12:7,I15:7 } }
   }},
   { id:"F10", nome:"ProtoPrint3D", areas:["A5"], notas:{
-      global:{ I5:7,I7:7,I8:7,I10:7,I12:7,I13:7 },
-      porArea:{ A5:{ I1:7,I2:7,I3:7,I4:6,I6:7,I9:8,I11:7,I14:7,I15:7 } }
+      global:{ I5:7,I7:7,I8:7,I10:7,I13:7,I14:7 },
+      porArea:{ A5:{ I1:7,I2:7,I3:7,I4:6,I6:7,I9:8,I11:7,I12:7,I15:7 } }
   }},
-  { id:"F11", nome:"AeroMetals", areas:["A1","A3"], notas:{
-      global:{ I5:8,I7:8,I8:7,I10:8,I12:8,I13:8 },
+  /* — vários com A1 + A2 para comparar — */
+  { id:"F11", nome:"AeroMetals", areas:["A1","A2","A3"], notas:{
+      global:{ I5:8,I7:8,I8:7,I10:8,I13:8,I14:8 },
       porArea:{
-        A1:{ I1:9,I2:7,I3:6,I4:8,I6:7,I9:8,I11:8,I14:8,I15:9 },
-        A3:{ I1:6,I2:5,I3:6,I4:6,I6:6,I9:6,I11:6,I14:6,I15:6 }
+        A1:{ I1:9,I2:7,I3:6,I4:8,I6:8,I9:8,I11:8,I12:8,I15:9 },
+        A2:{ I1:7,I2:7,I3:6,I4:6,I6:7,I9:6,I11:6,I12:6,I15:7 },
+        A3:{ I1:6,I2:5,I3:6,I4:6,I6:6,I9:5,I11:6,I12:6,I15:6 }
       }
   }},
-  { id:"F12", nome:"PolyFlex", areas:["A12","A4"], notas:{
-      global:{ I5:8,I7:8,I8:7,I10:7,I12:7,I13:7 },
+  { id:"F12", nome:"TurboMec", areas:["A1","A2"], notas:{
+      global:{ I5:7,I7:7,I8:6,I10:6,I13:7,I14:6 },
       porArea:{
-        A12:{ I1:7,I2:7,I3:7,I4:8,I6:7,I9:6,I11:7,I14:7,I15:7 },
-        A4:{  I1:7,I2:7,I3:7,I4:7,I6:7,I9:7,I11:7,I14:7,I15:7 }
+        A1:{ I1:8,I2:6,I3:6,I4:8,I6:7,I9:7,I11:7,I12:7,I15:8 },
+        A2:{ I1:7,I2:6,I3:6,I4:6,I6:7,I9:5,I11:6,I12:6,I15:6 }
       }
   }},
-  { id:"F13", nome:"NovaMold", areas:["A15","A4","A13"], notas:{
-      global:{ I5:8,I7:8,I8:7,I10:7,I12:8,I13:7 },
+  { id:"F13", nome:"ForgeMix", areas:["A1","A2","A7"], notas:{
+      global:{ I5:7,I7:7,I8:7,I10:7,I13:7,I14:7 },
       porArea:{
-        A15:{ I1:8,I2:7,I3:7,I4:7,I6:7,I9:7,I11:7,I14:8,I15:9 },
-        A4:{  I1:7,I2:7,I3:7,I4:7,I6:7,I9:7,I11:7,I14:7,I15:7 },
-        A13:{ I1:7,I2:6,I3:7,I4:6,I6:7,I9:6,I11:6,I14:7,I15:6 }
+        A1:{ I1:8,I2:7,I3:7,I4:7,I6:7,I9:6,I11:7,I12:7,I15:8 },
+        A2:{ I1:7,I2:7,I3:6,I4:6,I6:7,I9:6,I11:6,I12:6,I15:7 },
+        A7:{ I1:7,I2:6,I3:6,I4:6,I6:6,I9:5,I11:6,I12:6,I15:6 }
       }
   }},
-  { id:"F14", nome:"PrismaCut", areas:["A10"], notas:{
-      global:{ I5:7,I7:7,I8:7,I10:7,I12:7,I13:7 },
-      porArea:{ A10:{ I1:8,I2:8,I3:7,I4:7,I6:7,I9:6,I11:8,I14:7,I15:7 } }
-  }},
-  { id:"F15", nome:"InduParts", areas:["A14","A1"], notas:{
-      global:{ I5:7,I7:7,I8:7,I10:7,I12:7,I13:7 },
+  { id:"F14", nome:"Proweld Machining", areas:["A1","A2"], notas:{
+      global:{ I5:8,I7:7,I8:7,I10:7,I13:7,I14:7 },
       porArea:{
-        A14:{ I1:7,I2:7,I3:7,I4:6,I6:7,I9:6,I11:7,I14:7,I15:7 },
-        A1:{  I1:7,I2:7,I3:7,I4:6,I6:7,I9:6,I11:7,I14:7,I15:7 }
+        A1:{ I1:8,I2:8,I3:7,I4:7,I6:8,I9:7,I11:8,I12:8,I15:8 },
+        A2:{ I1:7,I2:7,I3:6,I4:6,I6:7,I9:6,I11:6,I12:6,I15:7 }
       }
   }},
-  { id:"F16", nome:"TurboMec", areas:["A1","A2"], notas:{
-      global:{ I5:7,I7:7,I8:6,I10:6,I12:7,I13:6 },
+  { id:"F15", nome:"SteelCraft", areas:["A1","A2","A8"], notas:{
+      global:{ I5:7,I7:7,I8:7,I10:7,I13:7,I14:7 },
       porArea:{
-        A1:{ I1:8,I2:6,I3:6,I4:8,I6:6,I9:7,I11:7,I14:6,I15:8 },
-        A2:{ I1:7,I2:6,I3:6,I4:6,I6:6,I9:5,I11:6,I14:6,I15:6 }
+        A1:{ I1:7,I2:7,I3:6,I4:7,I6:7,I9:6,I11:7,I12:7,I15:7 },
+        A2:{ I1:8,I2:6,I3:6,I4:6,I6:7,I9:5,I11:6,I12:6,I15:7 },
+        A8:{ I1:7,I2:6,I3:6,I4:6,I6:6,I9:5,I11:6,I12:6,I15:6 }
+      }
+  }},
+  { id:"F16", nome:"Weld&Mill", areas:["A1","A2"], notas:{
+      global:{ I5:8,I7:8,I8:8,I10:7,I13:8,I14:8 },
+      porArea:{
+        A1:{ I1:9,I2:8,I3:7,I4:8,I6:8,I9:7,I11:8,I12:8,I15:9 },
+        A2:{ I1:8,I2:7,I3:6,I4:6,I6:7,I9:6,I11:6,I12:6,I15:7 }
       }
   }},
   { id:"F17", nome:"MaxForge", areas:["A3","A7"], notas:{
-      global:{ I5:7,I7:6,I8:6,I10:6,I12:7,I13:6 },
+      global:{ I5:7,I7:6,I8:6,I10:6,I13:7,I14:6 },
       porArea:{
-        A3:{ I1:7,I2:5,I3:6,I4:6,I6:6,I9:5,I11:6,I14:6,I15:6 },
-        A7:{ I1:7,I2:6,I3:6,I4:6,I6:6,I9:5,I11:6,I14:6,I15:6 }
+        A3:{ I1:7,I2:5,I3:6,I4:6,I6:6,I9:5,I11:6,I12:6,I15:6 },
+        A7:{ I1:7,I2:6,I3:6,I4:6,I6:6,I9:5,I11:6,I12:6,I15:6 }
       }
   }},
   { id:"F18", nome:"PlastiForm", areas:["A4"], notas:{
-      global:{ I5:8,I7:8,I8:7,I10:7,I12:8,I13:7 },
-      porArea:{ A4:{ I1:7,I2:7,I3:7,I4:7,I6:7,I9:7,I11:7,I14:7,I15:7 } }
+      global:{ I5:8,I7:8,I8:7,I10:7,I13:8,I14:7 },
+      porArea:{ A4:{ I1:7,I2:7,I3:7,I4:7,I6:7,I9:7,I11:7,I12:7,I15:7 } }
   }},
   { id:"F19", nome:"Rotomax", areas:["A13"], notas:{
-      global:{ I5:7,I7:7,I8:7,I10:7,I12:7,I13:7 },
-      porArea:{ A13:{ I1:7,I2:6,I3:7,I4:6,I6:7,I9:6,I11:6,I14:7,I15:6 } }
+      global:{ I5:7,I7:7,I8:7,I10:7,I13:7,I14:7 },
+      porArea:{ A13:{ I1:7,I2:6,I3:7,I4:6,I6:7,I9:6,I11:6,I12:6,I15:6 } }
   }},
   { id:"F20", nome:"PaintFlex", areas:["A11","A10"], notas:{
-      global:{ I5:7,I7:8,I8:7,I10:8,I12:8,I13:8 },
+      global:{ I5:7,I7:8,I8:7,I10:8,I13:8,I14:8 },
       porArea:{
-        A11:{ I1:8,I2:7,I3:6,I4:6,I6:7,I9:6,I11:7,I14:8,I15:7 },
-        A10:{ I1:7,I2:8,I3:7,I4:6,I6:7,I9:6,I11:8,I14:7,I15:7 }
+        A11:{ I1:8,I2:7,I3:6,I4:6,I6:7,I9:6,I11:7,I12:7,I15:7 },
+        A10:{ I1:7,I2:8,I3:7,I4:6,I6:7,I9:6,I11:8,I12:8,I15:7 }
       }
   }},
-  { id:"F21", nome:"ForgePlus", areas:["A7","A8"], notas:{
-      global:{ I5:7,I7:7,I8:6,I10:7,I12:7,I13:7 },
+  { id:"F21", nome:"MeasureTech", areas:["A9","A6"], notas:{
+      global:{ I5:9,I7:9,I8:8,I10:8,I13:9,I14:8 },
       porArea:{
-        A7:{ I1:7,I2:6,I3:6,I4:6,I6:6,I9:5,I11:6,I14:6,I15:6 },
-        A8:{ I1:7,I2:6,I3:6,I4:6,I6:6,I9:5,I11:6,I14:6,I15:6 }
+        A9:{ I1:9,I2:8,I3:7,I4:6,I6:8,I9:8,I11:9,I12:8,I15:8 },
+        A6:{ I1:8,I2:8,I3:8,I4:7,I6:8,I9:8,I11:8,I12:8,I15:9 }
       }
   }},
-  { id:"F22", nome:"MeasureTech", areas:["A9","A6"], notas:{
-      global:{ I5:9,I7:9,I8:8,I10:8,I12:9,I13:8 },
+  { id:"F22", nome:"InduParts", areas:["A1","A2","A14"], notas:{
+      global:{ I5:7,I7:7,I8:7,I10:7,I13:7,I14:7 },
       porArea:{
-        A9:{ I1:9,I2:8,I3:7,I4:6,I6:8,I9:8,I11:9,I14:8,I15:8 },
-        A6:{ I1:8,I2:8,I3:8,I4:7,I6:8,I9:8,I11:8,I14:9,I15:9 }
+        A1:{ I1:7,I2:7,I3:7,I4:7,I6:7,I9:6,I11:7,I12:7,I15:7 },
+        A2:{ I1:7,I2:6,I3:6,I4:6,I6:7,I9:5,I11:6,I12:6,I15:6 },
+        A14:{ I1:7,I2:7,I3:7,I4:6,I6:7,I9:6,I11:7,I12:7,I15:7 }
       }
   }}
 ];
 
 /* ===================== ESTADO / STORAGE ===================== */
-const SK_SUP = "ss_pro_suppliers_v2";
-const SK_PROJ = "ss_pro_projects_v2";
+const SK_SUP = "ss_pro_suppliers_v3";
+const SK_PROJ = "ss_pro_projects_v3";
 let suppliers = [];
 let projects = [];
 let chartRes = null;
@@ -410,7 +443,7 @@ function switchTab(ev,id){
 /* ===================== PROJETO (Áreas & Índices) ===================== */
 function addAreaRow(){
   const wrap = document.getElementById('areasWrap');
-  const idx = wrap.children.length; // primeira é obrigatória
+  const idx = wrap.querySelectorAll('.card').length; // primeira é obrigatória
   const row = document.createElement('div');
   row.className="col-12";
   row.innerHTML = `
@@ -498,14 +531,13 @@ function calcular(){
 
   // calcular score por fornecedor
   const resultados = considerados.map(f=>{
-    // score por área (média ponderada dos índices)
     const areaScores = areasW.map(a=>{
       let s=0;
       idxW.forEach(ix=>{
         let nota=0;
         if(ix.scope==="area"){
           nota = f.notas?.porArea?.[a.id]?.[ix.id] ?? 0;
-        }else{ // global
+        }else{
           nota = f.notas?.global?.[ix.id] ?? 0;
         }
         s += nota * ix.w;
@@ -519,7 +551,6 @@ function calcular(){
   renderResultados(resultados, areasW);
   renderGrafico(resultados);
 
-  // salvar histórico simplificado (nome, desc, áreas, top3 gráfico)
   projects.unshift({
     nome: name||"(sem nome)",
     desc,
@@ -574,41 +605,66 @@ function renderGrafico(lista){
   });
 }
 
-/* ===================== LISTA DE FORNECEDORES (visual) ===================== */
-function renderFornecedores(){
+/* ===================== LISTA DE FORNECEDORES (visual + filtro de notas por área) ===================== */
+function renderFornecedores(clear){
+  const sel = document.getElementById('filtroAreaNotas');
+  if(sel.options.length<=1){
+    // preencher opções na 1ª vez
+    AREAS.forEach(a=>{
+      const o=document.createElement('option');o.value=a.id;o.textContent=a.nome;sel.appendChild(o);
+    });
+  }
+  if(clear){ sel.value=""; }
+
+  const areaNotas = sel.value || "";
+
   const div = document.getElementById('fornList');
-  let html = `<table><thead><tr><th>ID</th><th>Fornecedor</th><th>Áreas</th><th>Globais</th><th>Ações</th></tr></thead><tbody>`;
+  let head = `<tr><th>ID</th><th>Fornecedor</th><th>Áreas</th><th>Notas Globais</th>`;
+  if(areaNotas){
+    head += `<th>Notas — ${AREAS.find(a=>a.id===areaNotas)?.nome||areaNotas}</th>`;
+  }
+  head += `<th>Ações</th></tr>`;
+
+  let body = "";
   suppliers.forEach(f=>{
     const areas = f.areas.map(a=>AREAS.find(x=>x.id===a)?.nome||a).join(", ");
     const globais = Object.entries(f.notas?.global||{}).map(([k,v])=>{
       const n = INDICES.find(i=>i.id===k)?.nome||k; return `${n}: ${v}`;
     }).join("; ");
-    html += `<tr>
+
+    let colArea = "";
+    if(areaNotas){
+      const notasA = f.notas?.porArea?.[areaNotas]||{};
+      colArea = Object.entries(notasA).map(([k,v])=>{
+        const n = INDICES.find(i=>i.id===k)?.nome||k; return `${n}: ${v}`;
+      }).join("; ");
+    }
+
+    body += `<tr>
       <td>${f.id}</td>
       <td>${f.nome}</td>
       <td>${areas}</td>
       <td>${globais||"<span class='muted'>—</span>"}</td>
+      ${areaNotas?`<td>${colArea||"<span class='muted'>—</span>"}</td>`:""}
       <td>
         <button class="btn secondary" onclick="editarFornecedor('${f.id}')">Editar</button>
         <button class="btn danger" onclick="excluirFornecedor('${f.id}')">Excluir</button>
       </td>
     </tr>`;
   });
-  html += `</tbody></table>`;
-  div.innerHTML = html;
+
+  div.innerHTML = `<table><thead>${head}</thead><tbody>${body}</tbody></table>`;
 }
 
 /* ===================== CADASTRO / EDIÇÃO ===================== */
 let editingId = null;
 
 function renderCadastro(){
-  // áreas checkboxes
   const wrapAreas = document.getElementById('c_areas');
   wrapAreas.innerHTML = AREAS.map(a=>`
     <label class="col-3 small"><input type="checkbox" value="${a.id}" onchange="renderNotasPorArea()"> ${a.nome}</label>
   `).join("");
 
-  // notas globais
   const wrapGlob = document.getElementById('c_notasGlobais');
   wrapGlob.innerHTML = INDICES.filter(i=>i.scope==="global").map(i=>`
     <label class="small">${i.id} — ${i.nome}
@@ -616,7 +672,6 @@ function renderCadastro(){
     </label>
   `).join("");
 
-  // notas por área
   renderNotasPorArea();
 }
 
@@ -726,12 +781,11 @@ function excluirFornecedor(id){
   renderFornecedores();
 }
 
-/* ===================== PROJETOS (histórico simples com gráfico top3) ===================== */
+/* ===================== PROJETOS (histórico com gráfico top3) ===================== */
 function renderProjetos(){
   const div = document.getElementById('projHist');
   if(!projects.length){ div.innerHTML = `<p class="muted">Nenhum projeto salvo.</p>`; return; }
 
-  // Render cada projeto num card com mini gráfico top3
   let html = "";
   projects.forEach((p,ix)=>{
     const gid = `projChart_${ix}`;
@@ -746,7 +800,6 @@ function renderProjetos(){
   });
   div.innerHTML = html;
 
-  // desenha gráficos
   projects.forEach((p,ix)=>{
     const ctx = document.getElementById(`projChart_${ix}`).getContext('2d');
     const labels = p.top3.map(t=>t.nome);
@@ -762,6 +815,7 @@ function renderProjetos(){
 
 /* ===================== INIT ===================== */
 function initUI(){
+  // carregar base
   loadState();
   // Projeto
   renderIndices();
@@ -770,7 +824,7 @@ function initUI(){
   renderFornecedores();
 }
 
-loadState(); // pre-carrega para que cadastro use a base ao logar
+loadState();
 </script>
 </body>
 </html>
