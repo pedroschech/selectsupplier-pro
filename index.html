@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <title>SelectSupplier — Sistema de Apoio à Seleção de Fornecedores</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root{
+      --navy:#001a4d;
+      --blue:#003f91;
+      --bg:#0b1424;
+      --card:#0f2340;
+      --card-2:#122a4d;
+      --border:#193559;
+      --text:#eaf0ff;
+      --muted:#b9c6e2;
+      --accent:#ff6a00;
+      --green:#16a34a;
+      --yellow:#facc15;
+      --red:#dc2626;
+      --radius:16px;
+    }
+    *{box-sizing:border-box;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Inter,sans-serif}
+    body{margin:0;background:radial-gradient(1200px 600px at 10% -10%,#0d1f3a 0%,#0b1424 60%);}
+    header{
+      background:linear-gradient(135deg,var(--navy),var(--blue));
+      color:#fff;padding:18px 20px;display:flex;gap:12px;align-items:center;
+      box-shadow:0 4px 20px rgba(0,0,0,.35)
+    }
+    header h1{margin:0;font-size:1.6rem}
+    header p{margin:2px 0 0;color:#d2ddff;font-size:.9rem}
+    header img{height:44px}
+    main{max-width:1280px;margin:0 auto;padding:18px}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;box-shadow:0 8px 24px rgba(0,0,0,.28);margin-bottom:16px}
+    .tabs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+    .tab-btn{background:#0e223d;border:1px solid var(--border);color:var(--text);padding:7px 14px;border-radius:999px;cursor:pointer}
+    .tab-btn.active{background:var(--accent);border-color:var(--accent);color:#fff}
+    .section{display:none}
+    .section.active{display:block}
+    h2{margin:0 0 8px;color:#fff}
+    h3{margin:14px 0 6px;color:#fff}
+    label{display:block;font-weight:600;margin-bottom:4px;color:#e7ecff}
+    input,select,textarea{
+      width:100%;padding:8px 10px;border-radius:10px;border:1px solid var(--border);
+      background:#0e223d;color:var(--text)
+    }
+    input[type="number"]{max-width:120px}
+    textarea{min-height:70px;resize:vertical}
+    .btn{background:var(--accent);border:none;color:#fff;border-radius:999px;padding:8px 14px;font-weight:700;cursor:pointer}
+    .btn.secondary{background:#284772}
+    .btn.danger{background:var(--red)}
+    .btn.ghost{background:transparent;border:1px solid var(--border)}
+    table{width:100%;border-collapse:collapse;margin-top:8px;font-size:.9rem}
+    th,td{border:1px solid var(--border);padding:6px 8px;vertical-align:top}
+    th{background:#16395e;color:#fff;text-align:left}
+    td{color:var(--muted)}
+    .row{display:grid;grid-template-columns:repeat(12,1fr);gap:10px}
+    .col-6{grid-column:span 6}
+    .col-4{grid-column:span 4}
+    .col-3{grid-column:span 3}
+    .col-12{grid-column:span 12}
+    @media (max-width:900px){.col-6,.col-4,.col-3{grid-column:span 12}}
+    .muted{color:var(--muted);font-size:.9rem}
+    .legend{display:flex;gap:12px;flex-wrap:wrap;margin-top:8px}
+    .box{width:14px;height:14px;border-radius:3px;display:inline-block}
+    .badge{display:inline-flex;align-items:center;gap:6px;padding:2px 8px;border-radius:999px;font-size:.8rem;border:1px solid var(--border);background:var(--card-2);color:#dfe8ff}
+    .tag{display:inline-flex;align-items:center;background:#0e223d;border:1px solid var(--border);color:#dfe8ff;border-radius:999px;padding:2px 8px;font-size:.8rem;margin:2px 4px 0 0}
+    .stack{display:flex;flex-direction:column;gap:8px}
+    .area-pill{display:inline-flex;gap:8px;align-items:center;margin:6px 0 8px}
+    .small{font-size:.85rem}
+    .tip{background:#0e223d;border:1px dashed var(--border);padding:8px 10px;border-radius:10px;color:#cfe0ff}
+    .pill{display:inline-flex;align-items:center;gap:6px;background:#102645;border:1px solid var(--border);padding:2px 8px;border-radius:999px}
+    .divider{height:1px;background:var(--border);margin:10px 0}
+  </style>
+</head>
+<body>
+  <header>
+    <img alt="logo" src="data:image/svg+xml;utf8,
+      <svg xmlns='http://www.w3.org/2000/svg' width='44' height='44'>
+        <defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'>
+          <stop offset='0' stop-color='%23003f91'/><stop offset='1' stop-color='%23001a4d'/></linearGradient></defs>
+        <rect width='44' height='44' rx='9' fill='url(%23g)'/>
+        <path d='M10 30 L22 10 L34 30 Z' fill='%23ff6a00'/>
+      </svg>">
+    <div>
+      <h1>SelectSupplier</h1>
+      <p>Sistema de Apoio à Seleção de Fornecedores · AGEPE II — Escola Politécnica da PUCRS</p>
+    </div>
+  </header>
+
+  <main>
+    <div class="card">
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="projeto" onclick="showTab(event,'projeto')">Projeto</button>
+        <button class="tab-btn" data-tab="fornecedores" onclick="showTab(event,'fornecedores')">Fornecedores</button>
+        <button class="tab-btn" data-tab="cadastro" onclick="showTab(event,'cadastro')">Cadastrar Fornecedor</button>
+        <button class="tab-btn" data-tab="projetos" onclick="showTab(event,'projetos')">Projetos</button>
+        <button class="tab-btn" data-tab="sobre" onclick="showTab(event,'sobre')">Sobre</button>
+      </div>
+
+      <!-- PROJETO -->
+      <section id="projeto" class="section active">
+        <h2>Configuração do Projeto</h2>
+        <div class="row">
+          <div class="col-6">
+            <label>Nome do projeto</label>
+            <input id="projNome" type="text" placeholder="Ex.: Flange usinado + pintura + automação de célula">
+          </div>
+          <div class="col-6">
+            <label>Observações / escopo</label>
+            <input id="projObs" type="text" placeholder="Ex.: Lote piloto, lead time máximo 7 dias">
+          </div>
+          <div class="col-12">
+            <div class="tip small">Áreas: adicione 1+ processos. Cada área recebe um <b>peso (%)</b> no projeto. Os pesos serão <b>normalizados</b> automaticamente.</div>
+          </div>
+          <div class="col-12">
+            <h3>Áreas do projeto</h3>
+            <div id="areasProjeto" class="stack"></div>
+            <button class="btn" onclick="addAreaProjeto()">+ Adicionar área</button>
+          </div>
+          <div class="col-12">
+            <h3>Índices do projeto</h3>
+            <div class="tip small">Marque os índices a considerar e defina o <b>peso (%)</b> de cada um. (0–100; a soma não precisa ser 100, pois é normalizada.)</div>
+            <table id="tblIndices">
+              <thead><tr><th>Incluir</th><th>Índice</th><th>Escopo</th><th>Peso (%)</th><th>Peso normalizado</th><th>Descrição</th></tr></thead>
+              <tbody id="tblIndicesBody"></tbody>
+            </table>
+          </div>
+          <div class="col-12">
+            <button class="btn" onclick="calcularProjeto()">Calcular scores</button>
+          </div>
+          <div class="col-12" id="resultadoProjeto"></div>
+          <div class="col-12">
+            <canvas id="graficoProjeto" height="120"></canvas>
+          </div>
+        </div>
+      </section>
+
+      <!-- FORNECEDORES (consulta/edição) -->
+      <section id="fornecedores" class="section">
+        <h2>Base de Fornecedores</h2>
+        <div class="row">
+          <div class="col-4">
+            <label>Filtrar por área</label>
+            <select id="filtroArea" onchange="renderFornecedores()"></select>
+          </div>
+          <div class="col-4">
+            <label>Ver notas por área (escopo “área”)</label>
+            <select id="filtroAreaNotas" onchange="renderFornecedores()"></select>
+          </div>
+          <div class="col-4" style="display:flex;align-items:flex-end;gap:8px">
+            <button class="btn ghost" onclick="limparFiltros()">Limpar filtros</button>
+          </div>
+          <div class="col-12">
+            <div class="legend small">
+              <span class="badge">Legenda de cores (score):</span>
+              <span><span class="box" style="background:var(--green)"></span> 7 a 10</span>
+              <span><span class="box" style="background:var(--yellow)"></span> 4 a 6,99</span>
+              <span><span class="box" style="background:var(--red)"></span> 0 a 3,99</span>
+            </div>
+          </div>
+          <div class="col-12" id="listaFornecedores"></div>
+        </div>
+      </section>
+
+      <!-- CADASTRO -->
+      <section id="cadastro" class="section">
+        <h2>Cadastrar / Editar Fornecedor</h2>
+        <div class="row">
+          <div class="col-3">
+            <label>ID (editável)</label>
+            <input id="c_id" type="text" placeholder="Ex.: F120">
+          </div>
+          <div class="col-6">
+            <label>Nome</label>
+            <input id="c_nome" type="text" placeholder="Ex.: MetalPrime Serviços">
+          </div>
+          <div class="col-3" style="display:flex;align-items:flex-end;gap:8px">
+            <button class="btn" onclick="salvarFornecedor()">Salvar</button>
+            <button class="btn secondary" onclick="limparCadastro()">Limpar</button>
+          </div>
+
+          <div class="col-12"><div class="divider"></div></div>
+
+          <div class="col-6">
+            <h3>Áreas atendidas</h3>
+            <div id="c_areas" class="stack"></div>
+          </div>
+          <div class="col-6">
+            <h3>Notas globais (0–10)</h3>
+            <div id="c_notasGlobais" class="stack"></div>
+          </div>
+
+          <div class="col-12">
+            <h3>Notas por área (0–10)</h3>
+            <div id="c_notasPorArea" class="stack"></div>
+            <div class="tip small">Ao marcar/desmarcar áreas atendidas, os blocos de notas por área serão atualizados automaticamente.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- PROJETOS (histórico) -->
+      <section id="projetos" class="section">
+        <h2>Histórico de Projetos</h2>
+        <div id="listaProjetos"></div>
+      </section>
+
+      <!-- SOBRE -->
+      <section id="sobre" class="section">
+        <h2>Sobre</h2>
+        <p class="muted">Protótipo acadêmico para seleção multicritério de fornecedores, considerando múltiplos processos (áreas) com pesos por projeto e índices de avaliação com escopo global ou específico por área.</p>
+        <h3>Método de cálculo (resumo)</h3>
+        <ol class="muted">
+          <li>Escolha 1+ <b>áreas</b> do projeto e dê um <b>peso (%)</b> a cada (0–100, normalizado).</li>
+          <li>Selecione os <b>índices</b> e seus <b>pesos (%)</b> (0–100, normalizado).</li>
+          <li>Para cada fornecedor e cada área do projeto:
+            <ul>
+              <li>Se o índice for <b>escopo “área”</b>: usa a <b>nota da área</b> do fornecedor;</li>
+              <li>Se for <b>escopo “global”</b>: usa a <b>nota global</b> do fornecedor.</li>
+            </ul>
+          </li>
+          <li><b>Score da área</b> = soma(nota índice × peso índice normalizado).</li>
+          <li><b>Score final do fornecedor</b> = soma(score da área × peso da área normalizado).</li>
+        </ol>
+        <p class="muted">Em uso corporativo real: autenticação SSO/AD, banco de dados interno, versionamento de avaliações, integrações (ERP/Qualidade) e governança de dados.</p>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    /* =================== DADOS (ÁREAS / ÍNDICES / BASE) =================== */
+
+    // Índices: scope = "area" (varia por processo) ou "global" (não varia por processo)
+    const INDICES = [
+      { id:"I1",  nome:"Qualidade",                    scope:"area",   desc:"Conformidade com desenho/esp.; não conformidades" },
+      { id:"I2",  nome:"Tempo de Entrega",             scope:"area",   desc:"Pontualidade; lead time real" },
+      { id:"I3",  nome:"Custo",                        scope:"area",   desc:"Nível/previsibilidade de preço" },
+      { id:"I4",  nome:"Acuracidade de Documentos",    scope:"global", desc:"Erros em NF/CT-e; divergências" },
+      { id:"I5",  nome:"Confiabilidade Financeira",    scope:"global", desc:"Risco de crédito/continuidade" },
+      { id:"I6",  nome:"Compliance Legal",             scope:"global", desc:"Regularidade trabalhista/fiscal" },
+      { id:"I7",  nome:"Satisfação do Cliente Interno",scope:"area",   desc:"Feedback engenharia/produção" },
+      { id:"I8",  nome:"Inovação/Engenharia",          scope:"area",   desc:"Sugestões técnicas/melhoria" },
+      { id:"I9",  nome:"Desempenho Logístico",         scope:"area",   desc:"Expedição, agendamento, picking" },
+      { id:"I10", nome:"Suporte Pós-venda",            scope:"global", desc:"Atendimento e resolução de problemas" }
+    ];
+
+    // Áreas (adicionamos mais ramos, incluindo software/metrologia/etc.)
+    const AREAS = [
+      { id:"A1", nome:"Usinagem" },
+      { id:"A2", nome:"Soldagem" },
+      { id:"A3", nome:"Fundição" },
+      { id:"A4", nome:"Injeção Plástica" },
+      { id:"A5", nome:"Impressão 3D" },
+      { id:"A6", nome:"Software / Automação" },
+      { id:"A7", nome:"Tratamento Térmico" },
+      { id:"A8", nome:"Caldeiraria" },
+      { id:"A9", nome:"Metrologia 3D" },
+      { id:"A10", nome:"Corte a Laser / Dobra" },
+      { id:"A11", nome:"Pintura / Acabamento" }
+    ];
+
+    // Base de fornecedores — modelo: {id,nome,areas,notas:{global:{}, porArea:{A1:{I1:..}}}}
+    const BASE_PADRAO = [
+      {
+        id:"F1", nome:"MecanizaPro", areas:["A1","A2","A3"],
+        notas:{
+          global:{ I4:8, I5:7, I6:8, I10:7 },
+          porArea:{
+            A1:{ I1:8, I2:6, I3:7, I7:8, I8:7, I9:7 },
+            A2:{ I1:6, I2:6, I3:7, I7:6, I8:5, I9:6 },
+            A3:{ I1:5, I2:4, I3:5, I7:5, I8:5, I9:5 }
+          }
+        }
+      },
+      {
+        id:"F2", nome:"Usinax", areas:["A1","A5","A10"],
+        notas:{
+          global:{ I4:7, I5:6, I6:7, I10:7 },
+          porArea:{
+            A1:{ I1:7, I2:8, I3:6, I7:7, I8:6, I9:8 },
+            A5:{ I1:8, I2:7, I3:8, I7:8, I8:8, I9:7 },
+            A10:{ I1:7, I2:8, I3:7, I7:7, I8:6, I9:8 }
+          }
+        }
+      },
+      {
+        id:"F3", nome:"SmartAutomate", areas:["A6"],
+        notas:{
+          global:{ I4:9, I5:9, I6:9, I10:9 },
+          porArea:{ A6:{ I1:9, I2:8, I3:8, I7:9, I8:9, I9:8 } }
+        }
+      },
+      {
+        id:"F4", nome:"MetalPrime", areas:["A8","A7","A10"],
+        notas:{
+          global:{ I4:7, I5:7, I6:7, I10:7 },
+          porArea:{
+            A8:{ I1:6, I2:6, I3:6, I7:6, I8:5, I9:6 },
+            A7:{ I1:7, I2:7, I3:7, I7:7, I8:6, I9:7 },
+            A10:{ I1:7, I2:8, I3:7, I7:7, I8:6, I9:8 }
+          }
+        }
+      },
+      {
+        id:"F5", nome:"GreenPlast", areas:["A4","A11"],
+        notas:{
+          global:{ I4:8, I5:8, I6:8, I10:8 },
+          porArea:{
+            A4:{ I1:8, I2:7, I3:7, I7:8, I8:7, I9:7 },
+            A11:{ I1:7, I2:7, I3:7, I7:8, I8:6, I9:7 }
+          }
+        }
+      },
+      {
+        id:"F6", nome:"LaserShape", areas:["A10","A1"],
+        notas:{
+          global:{ I4:8, I5:7, I6:8, I10:7 },
+          porArea:{
+            A10:{ I1:8, I2:8, I3:7, I7:8, I8:6, I9:8 },
+            A1:{ I1:7, I2:7, I3:6, I7:7, I8:6, I9:7 }
+          }
+        }
+      },
+      {
+        id:"F7", nome:"MetriScan", areas:["A9"],
+        notas:{
+          global:{ I4:9, I5:8, I6:9, I10:8 },
+          porArea:{ A9:{ I1:9, I2:8, I3:7, I7:8, I8:8, I9:9 } }
+        }
+      },
+      {
+        id:"F8", nome:"TecnoWeld", areas:["A2"],
+        notas:{
+          global:{ I4:7, I5:7, I6:7, I10:7 },
+          porArea:{ A2:{ I1:8, I2:6, I3:6, I7:7, I8:6, I9:6 } }
+        }
+      },
+      {
+        id:"F9", nome:"AutoPaint", areas:["A11"],
+        notas:{
+          global:{ I4:7, I5:7, I6:8, I10:8 },
+          porArea:{ A11:{ I1:8, I2:7, I3:6, I7:8, I8:6, I9:7 } }
+        }
+      },
+      {
+        id:"F10", nome:"ProtoPrint3D", areas:["A5"],
+        notas:{
+          global:{ I4:7, I5:6, I6:7, I10:7 },
+          porArea:{ A5:{ I1:7, I2:7, I3:7, I7:7, I8:8, I9:7 } }
+        }
+      }
+    ];
+
+    /* =================== ESTADO / STORAGE =================== */
+    const STORAGE_KEY_SUP = "ss_pro_fornecedores";
+    const STORAGE_KEY_PROJ = "ss_pro_projetos";
+    let fornecedores = [];
+    let projetos = [];
+    let chart = null;
+    let editingId = null; // fornecedor em edição (ID original)
+
+    function loadState(){
+      try{
+        const s = JSON.parse(localStorage.getItem(STORAGE_KEY_SUP)||"null");
+        fornecedores = Array.isArray(s) ? s : structuredClone(BASE_PADRAO);
+      }catch(_){ fornecedores = structuredClone(BASE_PADRAO); }
+      try{
+        const p = JSON.parse(localStorage.getItem(STORAGE_KEY_PROJ)||"null");
+        projetos = Array.isArray(p) ? p : [];
+      }catch(_){ projetos = []; }
+    }
+    function saveSup(){ localStorage.setItem(STORAGE_KEY_SUP, JSON.stringify(fornecedores)); }
+    function saveProj(){ localStorage.setItem(STORAGE_KEY_PROJ, JSON.stringify(projetos)); }
+
+    /* =================== HELPERS UI =================== */
+    function showTab(ev, id){
+      document.querySelectorAll(".tab-btn").forEach(b=>b.classList.remove("active"));
+      document.querySelector(`.tab-btn[data-tab='${id}']`).classList.add("active");
+      document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
+      document.getElementById(id).classList.add("active");
+      if(id==="projeto"){ renderIndicesTable(); ensureOneArea(); }
+      if(id==="fornecedores"){ fillFiltros(); renderFornecedores(); }
+      if(id==="cadastro"){ renderCadastro(); }
+      if(id==="projetos"){ renderProjetos(); }
+    }
+
+    function ensureOneArea(){
+      const wrap = document.getElementById("areasProjeto");
+      if(!wrap.children.length) addAreaProjeto();
+    }
+
+    function clamp(n, min, max){
+      n = Number(n); if(isNaN(n)) return 0;
+      return Math.min(Math.max(n,min),max);
+    }
+
+    function weightNormalize(items, key){
+      const s = items.reduce((acc,it)=>acc+(+it[key]||0),0);
+      return items.map(it=>({ ...it, w: s>0 ? (+it[key]||0)/s : 0 }));
+    }
+
+    function colorByScore(v){
+      if(v>=7) return getComputedStyle(document.documentElement).getPropertyValue('--green').trim();
+      if(v>=4) return getComputedStyle(document.documentElement).getPropertyValue('--yellow').trim();
+      return getComputedStyle(document.documentElement).getPropertyValue('--red').trim();
+    }
+
+    /* =================== PROJETO: ÁREAS + ÍNDICES =================== */
+    function addAreaProjeto(){
+      const id = `ap_${crypto.randomUUID().slice(0,8)}`;
+      const el = document.createElement("div");
+      el.className = "card";
+      el.style.padding = "12px 12px";
+      el.innerHTML = `
+        <div class="row" data-area-item id="${id}">
+          <div class="col-6">
+            <label>Área</label>
+            <select class="ap-area"></select>
+          </div>
+          <div class="col-4">
+            <label>Peso da área (%)</label>
+            <input class="ap-peso" type="number" min="0" max="100" value="10">
+          </div>
+          <div class="col-2" style="display:flex;align-items:flex-end;">
+            <button class="btn secondary" onclick="removeAreaProjeto('${id}')">Remover</button>
+          </div>
+        </div>`;
+      document.getElementById("areasProjeto").appendChild(el);
+      const sel = el.querySelector(".ap-area");
+      AREAS.forEach(a=>{
+        const o = document.createElement("option"); o.value=a.id; o.textContent=a.nome; sel.appendChild(o);
+      });
+    }
+    function removeAreaProjeto(id){
+      const wrap = document.getElementById("areasProjeto");
+      if(wrap.children.length<=1){ alert("O projeto deve possuir ao menos 1 área."); return; }
+      const n = document.querySelector(`[data-area-item][id='${id}']`);
+      n?.parentElement?.remove();
+    }
+
+    function renderIndicesTable(){
+      const tb = document.getElementById("tblIndicesBody");
+      tb.innerHTML = "";
+      INDICES.forEach(ind=>{
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td><input type="checkbox" class="idx-inc" data-id="${ind.id}" checked></td>
+          <td>${ind.id} — ${ind.nome}</td>
+          <td><span class="badge">${ind.scope.toUpperCase()}</span></td>
+          <td><input type="number" class="idx-peso" data-id="${ind.id}" value="10" min="0" max="100"></td>
+          <td class="idx-norm" data-id="${ind.id}">—</td>
+          <td class="small muted">${ind.desc||""}</td>
+        `;
+        tb.appendChild(tr);
+      });
+    }
+
+    function calcularProjeto(){
+      const nome = (document.getElementById("projNome").value||"").trim();
+      if(!nome){ alert("Informe o nome do projeto."); return; }
+
+      // Áreas do projeto
+      const areaRows = [...document.querySelectorAll("#areasProjeto [data-area-item]")].map(row=>{
+        const id = row.querySelector(".ap-area").value;
+        const peso = clamp(row.querySelector(".ap-peso").value,0,100);
+        row.querySelector(".ap-peso").value = peso;
+        return { id, peso };
+      });
+      if(!areaRows.length){ alert("Adicione ao menos uma área."); return; }
+      const areasW = weightNormalize(areaRows, "peso");
+
+      // Índices do projeto
+      const idxRows = INDICES.map(ind=>{
+        const inc = document.querySelector(`.idx-inc[data-id='${ind.id}']`).checked;
+        const peso = clamp(document.querySelector(`.idx-peso[data-id='${ind.id}']`).value,0,100);
+        document.querySelector(`.idx-peso[data-id='${ind.id}']`).value = peso;
+        return { id: ind.id, scope: ind.scope, nome: ind.nome, inc, peso, desc: ind.desc };
+      }).filter(r=>r.inc);
+      if(!idxRows.length){ alert("Selecione ao menos um índice."); return; }
+      const idxW = weightNormalize(idxRows, "peso");
+
+      // Atualiza pesos normalizados exibidos
+      INDICES.forEach(ind=>{
+        const cell = document.querySelector(`.idx-norm[data-id='${ind.id}']`);
+        const found = idxW.find(i=>i.id===ind.id);
+        cell.textContent = found ? String(found.w.toFixed(3)).replace(".",",") : "0,000";
+      });
+
+      // Cálculo por fornecedor
+      const resultados = fornecedores.map(f=>{
+        // Score por área
+        const scoresArea = areasW.map(a=>{
+          // se fornecedor não atende a área, score=0
+          if(!f.areas.includes(a.id)) return { area:a.id, w:a.w, score:0, atende:false };
+
+          // média ponderada dos índices
+          let s = 0;
+          idxW.forEach(ix=>{
+            let nota = 0;
+            if(ix.scope==="area"){
+              nota = f.notas?.porArea?.[a.id]?.[ix.id] ?? 0;
+            }else{ // global
+              nota = f.notas?.global?.[ix.id] ?? 0;
+            }
+            s += nota * ix.w;
+          });
+          return { area:a.id, w:a.w, score:s, atende:true };
+        });
+
+        // Score final = soma(scoreArea * wArea)
+        const scoreFinal = scoresArea.reduce((acc,it)=>acc + it.score * it.w, 0);
+        return { fornecedor:f, scoresArea, scoreFinal };
+      }).sort((a,b)=>b.scoreFinal - a.scoreFinal);
+
+      // Render tabela e gráfico
+      renderResultadosProjeto(resultados, areasW, idxW);
+      renderGraficoProjeto(resultados);
+
+      // Salvar histórico (top 3, configuração)
+      const cfg = {
+        nome,
+        obs: (document.getElementById("projObs").value||"").trim(),
+        data: new Date().toISOString(),
+        areas: areasW.map(a=>({ id:a.id, nome:AREAS.find(x=>x.id===a.id)?.nome||a.id, peso:a.peso, w:+a.w.toFixed(4) })),
+        indices: idxW.map(i=>({ id:i.id, nome:i.nome, scope:i.scope, peso:i.peso, w:+i.w.toFixed(4) })),
+        top3: resultados.slice(0,3).map(r=>({ id:r.fornecedor.id, nome:r.fornecedor.nome, score:+r.scoreFinal.toFixed(2) }))
+      };
+      projetos.unshift(cfg);
+      saveProj();
+    }
+
+    function renderResultadosProjeto(resultados, areasW, idxW){
+      const wrap = document.getElementById("resultadoProjeto");
+      if(!resultados.length){ wrap.innerHTML = "<p class='muted'>Sem resultados.</p>"; return; }
+
+      let head = `<tr><th>Rank</th><th>ID</th><th>Fornecedor</th><th>Score</th>`;
+      areasW.forEach(a=>{
+        const nome = AREAS.find(x=>x.id===a.id)?.nome || a.id;
+        head += `<th>${nome} (w=${a.w.toFixed(2)})</th>`;
+      });
+      head += `</tr>`;
+
+      let body = "";
+      resultados.forEach((r,idx)=>{
+        const color = colorByScore(r.scoreFinal);
+        body += `<tr>
+          <td>#${idx+1}</td>
+          <td>${r.fornecedor.id}</td>
+          <td>${r.fornecedor.nome}</td>
+          <td><span class="badge" style="border-color:${color};">${r.scoreFinal.toFixed(2)}</span></td>`;
+        r.scoresArea.forEach(sa=>{
+          const c = colorByScore(sa.score);
+          const nomeArea = AREAS.find(x=>x.id===sa.area)?.nome || sa.area;
+          body += `<td title="${nomeArea}">${sa.atende?`<span class="pill" style="border-color:${c};">${sa.score.toFixed(2)}</span>`:`<span class="muted">—</span>`}</td>`;
+        });
+        body += `</tr>`;
+      });
+
+      wrap.innerHTML = `
+        <h3>Resultados</h3>
+        <div class="small muted">Cores refletem faixas de desempenho (verde ≥7; amarelo 4–6,99; vermelho 0–3,99).</div>
+        <table>
+          <thead>${head}</thead>
+          <tbody>${body}</tbody>
+        </table>`;
+    }
+
+    function renderGraficoProjeto(resultados){
+      const ctx = document.getElementById("graficoProjeto").getContext("2d");
+      const labels = resultados.map(r=>`${r.fornecedor.nome}`);
+      const data = resultados.map(r=>+r.scoreFinal.toFixed(2));
+      const colors = data.map(v=>colorByScore(v));
+
+      if(chart){ chart.destroy(); }
+      chart = new Chart(ctx, {
+        type:"bar",
+        data:{ labels, datasets:[{ label:"Score do projeto", data, backgroundColor:colors, borderColor:colors, borderWidth:1 }] },
+        options:{ responsive:true, scales:{ y:{ beginAtZero:true, max:10 } } }
+      });
+    }
+
+    /* =================== FORNECEDORES (LISTA / EDIÇÃO) =================== */
+    function fillFiltros(){
+      const fa = document.getElementById("filtroArea");
+      const fn = document.getElementById("filtroAreaNotas");
+      const opts = ['<option value="">Todas as áreas</option>'].concat(AREAS.map(a=>`<option value="${a.id}">${a.nome}</option>`));
+      fa.innerHTML = opts.join("");
+      fn.innerHTML = ['<option value="">(escolha para mostrar notas por área)</option>'].concat(AREAS.map(a=>`<option value="${a.id}">${a.nome}</option>`)).join("");
+    }
+    function limparFiltros(){ document.getElementById("filtroArea").value=""; document.getElementById("filtroAreaNotas").value=""; renderFornecedores(); }
+
+    function renderFornecedores(){
+      const areaFilter = document.getElementById("filtroArea").value;
+      const areaNotas = document.getElementById("filtroAreaNotas").value;
+      let lista = fornecedores.slice();
+      if(areaFilter) lista = lista.filter(f=>f.areas.includes(areaFilter));
+
+      let head = `<tr><th>ID</th><th>Fornecedor</th><th>Áreas</th><th>Globais</th>`;
+      if(areaNotas){ head += `<th>Notas — ${AREAS.find(a=>a.id===areaNotas)?.nome||areaNotas}</th>`; }
+      head += `<th>Ações</th></tr>`;
+
+      let body = "";
+      lista.forEach(f=>{
+        const areasNome = f.areas.map(a=>AREAS.find(x=>x.id===a)?.nome||a).join(", ");
+        const globais = Object.entries(f.notas?.global||{})
+          .map(([k,v])=>`${INDICES.find(i=>i.id===k)?.nome||k}: ${v}`)
+          .join("; ");
+        let colArea = "";
+        if(areaNotas){
+          const notasA = f.notas?.porArea?.[areaNotas]||{};
+          colArea = Object.entries(notasA)
+            .map(([k,v])=>`${INDICES.find(i=>i.id===k)?.nome||k}: ${v}`)
+            .join("; ");
+        }
+        body += `<tr>
+          <td>${f.id}</td>
+          <td>${f.nome}</td>
+          <td>${areasNome}</td>
+          <td>${globais||"<span class='muted'>—</span>"}</td>
+          ${areaNotas?`<td>${colArea||"<span class='muted'>—</span>"}</td>`:""}
+          <td>
+            <button class="btn secondary" onclick="editarFornecedor('${f.id}')">Editar</button>
+            <button class="btn danger" onclick="excluirFornecedor('${f.id}')">Excluir</button>
+          </td>
+        </tr>`;
+      });
+
+      const html = `<table><thead>${head}</thead><tbody>${body||"<tr><td colspan='6' class='muted'>Nenhum fornecedor encontrado.</td></tr>"}</tbody></table>`;
+      document.getElementById("listaFornecedores").innerHTML = html;
+    }
+
+    function editarFornecedor(id){
+      const f = fornecedores.find(x=>x.id===id);
+      if(!f) return;
+      editingId = id;
+      document.querySelector(".tab-btn[data-tab='cadastro']").click();
+
+      // Preenche campos
+      document.getElementById("c_id").value = f.id;
+      document.getElementById("c_nome").value = f.nome;
+
+      // Áreas atendidas
+      renderCadastroAreas();
+      f.areas.forEach(a=>{ const el = document.querySelector(`#c_areas input[value='${a}']`); if(el) el.checked = true; });
+
+      // Notas globais
+      renderCadastroNotasGlobais();
+      Object.entries(f.notas?.global||{}).forEach(([k,v])=>{
+        const el = document.querySelector(`#c_notasGlobais input[data-id='${k}']`);
+        if(el) el.value = v;
+      });
+
+      // Notas por área
+      renderCadastroNotasPorArea();
+      Object.entries(f.notas?.porArea||{}).forEach(([a, map])=>{
+        Object.entries(map||{}).forEach(([k,v])=>{
+          const el = document.querySelector(`#c_notasPorArea [data-area='${a}'] input[data-id='${k}']`);
+          if(el) el.value = v;
+        });
+      });
+    }
+
+    function excluirFornecedor(id){
+      if(!confirm("Confirma excluir este fornecedor da base local?")) return;
+      fornecedores = fornecedores.filter(f=>f.id!==id);
+      saveSup();
+      renderFornecedores();
+    }
+
+    /* =================== CADASTRO (FORM) =================== */
+    function renderCadastro(){
+      renderCadastroAreas();
+      renderCadastroNotasGlobais();
+      renderCadastroNotasPorArea();
+    }
+
+    function renderCadastroAreas(){
+      const wrap = document.getElementById("c_areas");
+      wrap.innerHTML = AREAS.map(a=>{
+        return `<label class="small"><input type="checkbox" value="${a.id}" onchange="renderCadastroNotasPorArea()"> ${a.nome}</label>`;
+      }).join("");
+    }
+
+    function renderCadastroNotasGlobais(){
+      const wrap = document.getElementById("c_notasGlobais");
+      wrap.innerHTML = INDICES.filter(i=>i.scope==="global").map(i=>{
+        return `<label class="small">${i.id} — ${i.nome} <input type="number" min="0" max="10" step="0.1" data-id="${i.id}"></label>`;
+      }).join("");
+    }
+
+    function renderCadastroNotasPorArea(){
+      const wrap = document.getElementById("c_notasPorArea");
+      const marcadas = [...document.querySelectorAll("#c_areas input:checked")].map(i=>i.value);
+      const idxArea = INDICES.filter(i=>i.scope==="area");
+      if(!marcadas.length){ wrap.innerHTML = `<div class="muted">Marque áreas para preencher as notas específicas por área.</div>`; return; }
+      wrap.innerHTML = marcadas.map(a=>{
+        const nome = AREAS.find(x=>x.id===a)?.nome||a;
+        const inputs = idxArea.map(i=>`<label class="small">${i.id} — ${i.nome} <input type="number" min="0" max="10" step="0.1" data-id="${i.id}"></label>`).join("");
+        return `<div class="card" style="background:var(--card-2)"><div class="area-pill"><span class="badge">${nome}</span></div><div data-area="${a}" class="stack">${inputs}</div></div>`;
+      }).join("");
+    }
+
+    function limparCadastro(){
+      editingId = null;
+      document.getElementById("c_id").value = "";
+      document.getElementById("c_nome").value = "";
+      renderCadastro();
+    }
+
+    function salvarFornecedor(){
+      const idNew = (document.getElementById("c_id").value||"").trim();
+      const nome = (document.getElementById("c_nome").value||"").trim();
+      if(!idNew || !nome){ alert("Preencha ID e Nome."); return; }
+
+      // Áreas marcadas
+      const areasMarcadas = [...document.querySelectorAll("#c_areas input:checked")].map(i=>i.value);
+      if(!areasMarcadas.length){ alert("Selecione ao menos uma área atendida."); return; }
+
+      // Notas globais
+      const globais = {};
+      document.querySelectorAll("#c_notasGlobais input").forEach(inp=>{
+        const v = inp.value.trim();
+        if(v!=="") globais[inp.dataset.id] = clamp(v,0,10);
+      });
+
+      // Notas por área
+      const porArea = {};
+      document.querySelectorAll("#c_notasPorArea [data-area]").forEach(bl=>{
+        const areaId = bl.getAttribute("data-area");
+        porArea[areaId] = {};
+        bl.querySelectorAll("input").forEach(inp=>{
+          const v = inp.value.trim();
+          if(v!=="") porArea[areaId][inp.dataset.id] = clamp(v,0,10);
+        });
+      });
+
+      const obj = { id:idNew, nome, areas:areasMarcadas, notas:{ global:globais, porArea } };
+
+      if(editingId){
+        // Atualiza (inclusive ID editável)
+        const ix = fornecedores.findIndex(f=>f.id===editingId);
+        if(ix>=0) fornecedores[ix] = obj;
+        editingId = null;
+      }else{
+        // Impede ID duplicado
+        if(fornecedores.some(f=>f.id===idNew)){
+          alert("Já existe um fornecedor com esse ID. Edite o existente ou escolha outro ID.");
+          return;
+        }
+        fornecedores.push(obj);
+      }
+      saveSup();
+      alert("Fornecedor salvo na base local.");
+      limparCadastro();
+      document.querySelector(".tab-btn[data-tab='fornecedores']").click();
+    }
+
+    /* =================== PROJETOS (HISTÓRICO) =================== */
+    function renderProjetos(){
+      const el = document.getElementById("listaProjetos");
+      if(!projetos.length){ el.innerHTML = `<p class="muted">Nenhum projeto salvo ainda.</p>`; return; }
+      let html = "";
+      projetos.forEach(p=>{
+        const data = new Date(p.data);
+        html += `<div class="card">
+          <div class="row">
+            <div class="col-12"><strong>${p.nome}</strong> <span class="muted small">(${data.toLocaleString()})</span></div>
+            ${p.obs?`<div class="col-12 small muted">Obs.: ${p.obs}</div>`:""}
+            <div class="col-6">
+              <h4>Áreas</h4>
+              ${p.areas.map(a=>`<div class="tag">${a.nome} · w=${a.w}</div>`).join(" ")}
+            </div>
+            <div class="col-6">
+              <h4>Índices</h4>
+              ${p.indices.map(i=>`<div class="tag">${i.id} ${i.nome} <span class="muted">(${i.scope})</span> · w=${i.w}</div>`).join(" ")}
+            </div>
+            <div class="col-12">
+              <h4>Top 3</h4>
+              ${p.top3.map(t=>`<div class="tag">${t.id} — ${t.nome} · ${t.score.toFixed(2)}</div>`).join(" ")}
+            </div>
+          </div>
+        </div>`;
+      });
+      el.innerHTML = html;
+    }
+
+    /* =================== INIT =================== */
+    function init(){
+      loadState();
+      renderIndicesTable();
+      ensureOneArea();
+    }
+    init();
+  </script>
+</body>
+</html>
